@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AgriLink — Farm to Plate Prototype</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    /* ====== Basic Reset ====== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html,body { height:100%; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: #f6fbf7; color:#10311b; }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; }
+
+    /* ====== Layout ====== */
+    .app { max-width: 1000px; margin: 28px auto; padding: 20px; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px; }
+    .logo { display:flex; gap:12px; align-items:center; }
+    .logo-mark { width:48px; height:48px; background:linear-gradient(135deg,#2f7a3e,#7fbf3a); border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:18px; box-shadow: 0 6px 18px rgba(47,122,62,0.16); }
+    .title { font-size:20px; font-weight:700; }
+    .subtitle { font-size:12px; color:#4d5b4d; }
+
+    nav { display:flex; gap:8px; align-items:center; }
+    .btn { background:#fff; border:1px solid #e3e9e3; padding:8px 12px; border-radius:8px; }
+    .btn.primary { background:#2f7a3e; color:white; border:none; }
+    .btn.ghost { background:transparent; border:1px solid #2f7a3e; color:#2f7a3e; }
+
+    main { display:grid; grid-template-columns: 1fr 360px; gap:18px; }
+    .panel { background:white; border-radius:12px; padding:14px; box-shadow:0 10px 30px rgba(9,30,12,0.04); }
+
+    /* ====== Landing ====== */
+    .hero { display:flex; gap:20px; align-items:center; }
+    .hero-left { flex:1; }
+    .hero h1 { font-size:28px; margin-bottom:8px; }
+    .hero p { color:#4b5b4b; margin-bottom:14px; }
+    .cta-row { display:flex; gap:10px; }
+
+    /* ====== product list ====== */
+    .list { display:grid; gap:12px; }
+    .card { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px; border-radius:10px; border:1px solid #eef6ee; }
+    .card-left { display:flex; gap:12px; align-items:center; }
+    .produce-thumb { width:64px; height:64px; border-radius:8px; background:linear-gradient(180deg,#fff,#f6fff6); display:flex; align-items:center; justify-content:center; border:1px solid #f0f6f0; font-weight:700; color:#2f7a3e; }
+    .meta { font-size:14px; }
+    .meta small { color:#67796a; display:block; font-size:12px; }
+    .badge { background:#e8f7ea; color:#2f7a3e; padding:6px 8px; border-radius:8px; font-size:12px; }
+
+    /* ====== farmer form ====== */
+    form input, form select { width:100%; padding:8px 10px; margin-bottom:8px; border-radius:8px; border:1px solid #e6efe6; }
+    label { font-size:13px; color:#38503a; margin-bottom:6px; display:block; }
+
+    /* ====== cart & order ====== */
+    .small { font-size:13px; color:#4b5b4b; }
+    .cart-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #eef6ee; }
+    .muted { color:#7a8b7a; font-size:13px; }
+
+    /* ====== impact counters ====== */
+    .counters { display:flex; gap:10px; }
+    .counter { flex:1; background:linear-gradient(180deg,#f7fff7,#ffffff); padding:10px; border-radius:10px; text-align:center; }
+    .counter h3 { color:#2f7a3e; margin-bottom:6px; }
+
+    /* ====== responsive ====== */
+    @media (max-width:980px) {
+      main { grid-template-columns: 1fr; }
+      .app { padding:12px; }
+      .logo-mark { width:42px; height:42px; font-size:16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header>
+      <div class="logo">
+        <div class="logo-mark">Ag</div>
+        <div>
+          <div class="title">AgriLink</div>
+          <div class="subtitle">Fresh · Fair · Direct</div>
+        </div>
+      </div>
+
+      <nav>
+        <button class="btn" id="navHome">Home</button>
+        <button class="btn" id="navBrowse">Browse</button>
+        <button class="btn" id="navFarmer">Farmer Portal</button>
+        <button class="btn" id="navImpact">Impact</button>
+        <button class="btn ghost" id="navCart">Cart (<span id="cartCount">0</span>)</button>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Left: main content -->
+      <section>
+        <!-- dynamic content will be inserted here -->
+        <div id="content"></div>
+      </section>
+
+      <!-- Right: side panel -->
+      <aside>
+        <div class="panel" style="margin-bottom:12px;">
+          <h4 style="margin-bottom:8px;">Quick Actions</h4>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button class="btn primary" id="quickBuy">I'm a Consumer — Browse</button>
+            <button class="btn" id="quickSell">I'm a Farmer — Add Produce</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h4 style="margin-bottom:8px;">Cart Summary</h4>
+          <div id="cartSummary"></div>
+          <div style="margin-top:10px;">
+            <button class="btn primary" id="goCheckout">Checkout</button>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:12px;">
+          <h4 style="margin-bottom:8px;">Impact Snapshot</h4>
+          <div class="counters">
+            <div class="counter">
+              <h3 id="impactFarmers">0</h3><div class="muted">Farmers</div>
+            </div>
+            <div class="counter">
+              <h3 id="impactWaste">0 kg</h3><div class="muted">Waste Reduced</div>
+            </div>
+          </div>
+          <div style="margin-top:8px;" class="small">Use this snapshot to show social impact during your pitch.</div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    /***************
+      AgriLink – Simple client-side prototype
+      - Single-file demo using localStorage for persistence
+      - Features: landing, farmer add/list, browse, view, cart, checkout, impact
+    ****************/
+
+    // ---------- Helper utils ----------
+    const $ = (sel) => document.querySelector(sel);
+    const el = (html) => {
+      const template = document.createElement('template');
+      template.innerHTML = html.trim();
+      return template.content.firstChild;
+    };
+
+    // ---------- Data keys ----------
+    const KEY_PRODUCE = 'agri_produce_v1';
+    const KEY_CART = 'agri_cart_v1';
+    const KEY_ORDERS = 'agri_orders_v1';
+    const KEY_META = 'agri_meta_v1';
+
+    // ---------- Seed sample data if none ----------
+    function seedData() {
+      if (!localStorage.getItem(KEY_PRODUCE)) {
+        const sample = [
+          { id: genId(), name:'Tomatoes', qtyKg:50, pricePerKg:40, farm:'Siddhu Farms', distanceKm:12, freshness:95, createdAt:Date.now() },
+          { id: genId(), name:'Potatoes', qtyKg:120, pricePerKg:22, farm:'GreenCollect', distanceKm:8, freshness:90, createdAt:Date.now() },
+          { id: genId(), name:'Spinach', qtyKg:30, pricePerKg:28, farm:'Asha Farm', distanceKm:6, freshness:98, createdAt:Date.now() },
+        ];
+        localStorage.setItem(KEY_PRODUCE, JSON.stringify(sample));
+      }
+      if (!localStorage.getItem(KEY_CART)) localStorage.setItem(KEY_CART, JSON.stringify([]));
+      if (!localStorage.getItem(KEY_ORDERS)) localStorage.setItem(KEY_ORDERS, JSON.stringify([]));
+      if (!localStorage.getItem(KEY_META)) localStorage.setItem(KEY_META, JSON.stringify({ farmersConnected: 42, wasteReducedKg: 312 }));
+    }
+
+    function genId() { return 'p_' + Math.random().toString(36).slice(2,9); }
+
+    // ---------- State helpers ----------
+    function getProduce() { return JSON.parse(localStorage.getItem(KEY_PRODUCE) || '[]'); }
+    function setProduce(arr) { localStorage.setItem(KEY_PRODUCE, JSON.stringify(arr)); renderBrowse(); }
+    function getCart() { return JSON.parse(localStorage.getItem(KEY_CART) || '[]'); }
+    function setCart(c) { localStorage.setItem(KEY_CART, JSON.stringify(c)); renderCartSummary(); updateCartCount(); }
+
+    function getOrders() { return JSON.parse(localStorage.getItem(KEY_ORDERS) || '[]'); }
+    function setOrders(o) { localStorage.setItem(KEY_ORDERS, JSON.stringify(o)); }
+
+    function getMeta() { return JSON.parse(localStorage.getItem(KEY_META) || '{}'); }
+    function setMeta(m) { localStorage.setItem(KEY_META, JSON.stringify(m)); renderImpactPanel(); }
+
+    // ---------- Navigation ----------
+    function showHome() { renderLanding(); }
+    function showBrowse() { renderBrowse(); }
+    function showFarmer() { renderFarmerPortal(); }
+    function showImpact() { renderImpact(); }
+    function showCartView() { renderCartView(); }
+
+    document.getElementById('navHome').addEventListener('click', showHome);
+    document.getElementById('navBrowse').addEventListener('click', showBrowse);
+    document.getElementById('navFarmer').addEventListener('click', showFarmer);
+    document.getElementById('navImpact').addEventListener('click', showImpact);
+    document.getElementById('navCart').addEventListener('click', showCartView);
+    document.getElementById('quickBuy').addEventListener('click', showBrowse);
+    document.getElementById('quickSell').addEventListener('click', showFarmer);
+    document.getElementById('goCheckout').addEventListener('click', checkoutMock);
+
+    // ---------- Render utilities ----------
+    function clearContent() { $('#content').innerHTML = ''; window.scrollTo({top:0, behavior:'smooth'}); }
+
+    // --- Landing ---
+    function renderLanding() {
+      clearContent();
+      const c = el(`
+        <div class="panel hero">
+          <div class="hero-left">
+            <h1>Connect collectors & small farms directly to consumers</h1>
+            <p>Create fair prices, reduce food waste and bring fresh produce to people nearby.</p>
+            <div class="cta-row">
+              <button class="btn ghost" id="landingSell">I'm a Farmer / Collector</button>
+              <button class="btn primary" id="landingBuy">I'm a Consumer — Browse</button>
+            </div>
+            <div style="margin-top:12px;" class="small">Demo: Use the farmer portal to add produce (saved locally), and consumer portal to buy it.</div>
+          </div>
+          <div style="width:320px;">
+            <div class="panel" style="border-radius:10px;">
+              <h4 style="margin-bottom:8px;">Why AgriLink?</h4>
+              <ul style="color:#4b5b4b; margin-left:14px;">
+                <li>Eliminate middlemen — fairer pay for farmers</li>
+                <li>Discounts on near-expiry produce — reduce waste</li>
+                <li>Nearby matching — reduce transport & CO₂</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      `);
+      $('#content').appendChild(c);
+      $('#landingSell').addEventListener('click', showFarmer);
+      $('#landingBuy').addEventListener('click', showBrowse);
+    }
+
+    // --- Farmer portal ---
+    function renderFarmerPortal() {
+      clearContent();
+      const c = el(`
+        <div>
+          <div class="panel">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h2>Farmer / Collector Portal</h2>
+                <div class="small">Add produce quickly — buyers nearby will see it in Browse.</div>
+              </div>
+              <div><button class="btn" id="farmerBack">Back</button></div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <form id="farmerForm">
+                <label>Produce name</label>
+                <input id="pName" placeholder="e.g. Tomatoes" required />
+                <label>Quantity (kg)</label>
+                <input id="pQty" type="number" min="1" placeholder="e.g. 50" required />
+                <label>Price per kg (₹)</label>
+                <input id="pPrice" type="number" min="1" placeholder="e.g. 40" required />
+                <label>Farm / Collector name</label>
+                <input id="pFarm" placeholder="e.g. Mahesh Farm" />
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                  <button class="btn primary" type="submit">Add Produce</button>
+                  <button class="btn" type="button" id="clearForm">Clear</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-top:12px;">
+            <h3>Current listings</h3>
+            <div id="farmerList" class="list"></div>
+          </div>
+        </div>
+      `);
+      $('#content').appendChild(c);
+
+      // events
+      $('#farmerBack').addEventListener('click', renderLanding);
+      $('#clearForm').addEventListener('click', () => {
+        $('#pName').value=''; $('#pQty').value=''; $('#pPrice').value=''; $('#pFarm').value='';
+      });
+
+      $('#farmerForm').addEventListener('submit', (ev) => {
+        ev.preventDefault();
+        const name = $('#pName').value.trim();
+        const qty = Number($('#pQty').value);
+        const price = Number($('#pPrice').value);
+        let farm = $('#pFarm').value.trim() || 'Local Farm';
+        if (!name || !qty || !price) return alert('Please fill all fields');
+        const item = { id: genId(), name, qtyKg: qty, pricePerKg: price, farm, distanceKm: Math.floor(Math.random()*15)+2, freshness: 90 + Math.floor(Math.random()*9), createdAt: Date.now() };
+        const arr = getProduce();
+        arr.unshift(item);
+        setProduce(arr);
+        $('#pName').value=''; $('#pQty').value=''; $('#pPrice').value=''; $('#pFarm').value='';
+        renderFarmerPortal(); // re-render to update list
+      });
+
+      // Populate current listings
+      const list = $('#farmerList');
+      list.innerHTML = '';
+      getProduce().forEach(p => {
+        const row = el(`
+          <div class="card">
+            <div class="card-left">
+              <div class="produce-thumb">${p.name[0] || 'P'}</div>
+              <div>
+                <div style="font-weight:700">${p.name}</div>
+                <div class="meta">${p.qtyKg} kg • ₹${p.pricePerKg}/kg <small>${p.farm} • ${p.distanceKm} km • Fresh ${p.freshness}%</small></div>
+              </div>
+            </div>
+            <div>
+              <button class="btn" data-id="${p.id}" data-act="edit">Edit</button>
+              <button class="btn" data-id="${p.id}" data-act="remove" style="margin-left:6px;">Remove</button>
+            </div>
+          </div>
+        `);
+        list.appendChild(row);
+      });
+
+      // Add handlers for remove/edit
+      list.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = btn.getAttribute('data-id');
+          const act = btn.getAttribute('data-act');
+          if (act === 'remove') {
+            if (!confirm('Remove this listing?')) return;
+            const arr = getProduce().filter(x => x.id !== id);
+            setProduce(arr);
+            renderFarmerPortal();
+          } else if (act === 'edit') {
+            const p = getProduce().find(x => x.id === id);
+            if (!p) return;
+            $('#pName').value = p.name; $('#pQty').value = p.qtyKg; $('#pPrice').value = p.pricePerKg; $('#pFarm').value = p.farm;
+            window.scrollTo({top:0, behavior:'smooth'});
+          }
+        });
+      });
+    }
+
+    // --- Browse / Consumer ---
+    function renderBrowse() {
+      clearContent();
+      const c = el(`
+        <div>
+          <div class="panel">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h2>Browse Fresh Produce Nearby</h2>
+                <div class="small">Filter by category, sort by distance or price (demo filters are visual).</div>
+              </div>
+              <div>
+                <button class="btn" id="browseBack">Back</button>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <input placeholder="Search produce (e.g. Tomatoes)" id="searchBox" style="flex:1; padding:8px; border-radius:8px; border:1px solid #e6efe6;" />
+                <select id="sortBy" style="padding:8px; border-radius:8px; border:1px solid #e6efe6;">
+                  <option value="distance">Sort: Nearest</option>
+                  <option value="price">Sort: Price low → high</option>
+                </select>
+                <button class="btn" id="filterDeals">Near-expiry deals</button>
+              </div>
+
+              <div id="browseList" class="list"></div>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-top:12px;">
+            <h3>How to demo</h3>
+            <ul style="margin-left:14px;" class="small">
+              <li>Click View on a produce card → choose qty → Add to Cart.</li>
+              <li>Go to Cart → Checkout to create a mock order (saved locally).</li>
+              <li>Open Impact to show social benefits in your pitch.</li>
+            </ul>
+          </div>
+        </div>
+      `);
+      $('#content').appendChild(c);
+
+      $('#browseBack').addEventListener('click', renderLanding);
+      $('#searchBox').addEventListener('input', renderBrowseList);
+      $('#sortBy').addEventListener('change', renderBrowseList);
+      $('#filterDeals').addEventListener('click', () => alert('Near-expiry deals highlighted by freshness < 92% in demo (visual).'));
+
+      renderBrowseList();
+    }
+
+    function renderBrowseList() {
+      const list = $('#browseList');
+      if (!list) return;
+      const q = $('#searchBox') ? $('#searchBox').value.trim().toLowerCase() : '';
+      const sortBy = $('#sortBy') ? $('#sortBy').value : 'distance';
+      let arr = getProduce().slice();
+
+      if (q) arr = arr.filter(p => p.name.toLowerCase().includes(q) || p.farm.toLowerCase().includes(q));
+
+      if (sortBy === 'distance') arr.sort((a,b) => a.distanceKm - b.distanceKm);
+      else arr.sort((a,b) => a.pricePerKg - b.pricePerKg);
+
+      list.innerHTML = '';
+      if (arr.length === 0) list.innerHTML = '<div class="small">No produce available right now.</div>';
+
+      arr.forEach(p => {
+        const card = el(`
+          <div class="card">
+            <div class="card-left">
+              <div class="produce-thumb">${p.name[0]}</div>
+              <div>
+                <div style="font-weight:700">${p.name} <span class="badge">₹${p.pricePerKg}/kg</span></div>
+                <div class="meta">${p.qtyKg} kg available • ${p.farm} <small>Distance ${p.distanceKm} km • Fresh ${p.freshness}%</small></div>
+              </div>
+            </div>
+            <div>
+              <button class="btn" data-id="${p.id}" data-act="view">View</button>
+            </div>
+          </div>
+        `);
+        list.appendChild(card);
+      });
+
+      // attach view handlers
+      list.querySelectorAll('button[data-act="view"]').forEach(b => {
+        b.addEventListener('click', () => {
+          const id = b.getAttribute('data-id');
+          const p = getProduce().find(x => x.id === id);
+          if (!p) return alert('Item not found');
+          renderProductDetail(p);
+        });
+      });
+    }
+
+    function renderProductDetail(p) {
+      clearContent();
+      const c = el(`
+        <div>
+          <div class="panel">
+            <div style="display:flex; justify-content:space-between;">
+              <div>
+                <h2>${p.name}</h2>
+                <div class="small">${p.farm} • ${p.qtyKg} kg available</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-weight:700; font-size:18px;">₹${p.pricePerKg}/kg</div>
+                <div class="muted">Distance ${p.distanceKm} km</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+              <div>
+                <label>Quantity (kg)</label>
+                <input id="buyQty" type="number" value="1" min="1" style="width:120px;" />
+              </div>
+              <div style="align-self:flex-end;">
+                <button class="btn primary" id="addToCartBtn">Add to cart</button>
+                <button class="btn" id="backToBrowse">Back</button>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <h4>Smart suggestions</h4>
+              <div class="small">Suggested price (AI): <strong>₹${suggestPrice(p.pricePerKg)}</strong> /kg</div>
+              <div class="small">Last-mile delivery estimate: ~${30 + p.distanceKm * 4} minutes</div>
+            </div>
+          </div>
+        </div>
+      `);
+      $('#content').appendChild(c);
+
+      $('#backToBrowse').addEventListener('click', renderBrowse);
+      $('#addToCartBtn').addEventListener('click', () => {
+        const qty = Number($('#buyQty').value);
+        if (!qty || qty < 1) return alert('Enter a valid quantity');
+        if (qty > p.qtyKg) {
+          if (!confirm(`Only ${p.qtyKg} kg available. Add ${p.qtyKg} kg to cart?`)) return;
+          addToCart(p, p.qtyKg);
+        } else addToCart(p, qty);
+      });
+    }
+
+    // simple "AI" suggestion: returns a price slightly varied around current price
+    function suggestPrice(current) {
+      const delta = Math.round(current * (Math.random()*0.15 - 0.05)); // -5% to +10%
+      return Math.max(1, current + delta);
+    }
+
+    // --- Cart actions ---
+    function addToCart(item, kg) {
+      const cart = getCart();
+      // if same product exists, combine
+      const same = cart.find(c => c.id === item.id);
+      if (same) {
+        same.kg += kg;
+        same.total = Math.round(same.kg * same.pricePerKg);
+      } else {
+        cart.push({ id:item.id, name:item.name, pricePerKg:item.pricePerKg, kg, total: Math.round(kg*item.pricePerKg), farm:item.farm });
+      }
+      setCart(cart);
+      alert(`${kg} kg of ${item.name} added to cart (demo).`);
+    }
+
+    // Cart summary (right panel)
+    function renderCartSummary() {
+      const cont = $('#cartSummary');
+      const cart = getCart();
+      cont.innerHTML = '';
+      if (cart.length === 0) {
+        cont.innerHTML = '<div class="small">Cart is empty</div>';
+        $('#cartCount').innerText = 0;
+        return;
+      }
+      cart.forEach(c => {
+        const row = el(`<div class="cart-row"><div>${c.name} <div class="muted small">${c.kg} kg • ₹${c.pricePerKg}/kg</div></div><div>₹${c.total}</div></div>`);
+        cont.appendChild(row);
+      });
+      const total = cart.reduce((s,i)=>s+i.total,0);
+      const footer = el(`<div style="margin-top:8px; font-weight:700">Total: ₹${total}</div>`);
+      cont.appendChild(footer);
+      $('#cartCount').innerText = cart.length;
+    }
+
+    function updateCartCount() {
+      const cart = getCart();
+      $('#cartCount').innerText = cart.length;
+    }
+
+    // Cart view
+    function renderCartView() {
+      clearContent();
+      const cart = getCart();
+      const c = el(`<div class="panel"><h2>Cart</h2></div>`);
+      $('#content').appendChild(c);
+      const card = el(`<div style="margin-top:12px;" class="panel"></div>`);
+      $('#content').appendChild(card);
+      if (cart.length === 0) {
+        card.innerHTML = '<div class="small">Your cart is empty. Browse produce to add items.</div>';
+        return;
+      }
+      cart.forEach((i, idx) => {
+        const row = el(`
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed #eef6ee;">
+            <div>
+              <div style="font-weight:700">${i.name}</div>
+              <div class="muted small">${i.kg} kg • ₹${i.pricePerKg}/kg • ${i.farm}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700">₹${i.total}</div>
+              <div style="margin-top:6px;"><button class="btn" data-idx="${idx}" data-act="remove">Remove</button></div>
+            </div>
+          </div>
+        `);
+        card.appendChild(row);
+      });
+      const total = cart.reduce((s,i)=>s+i.total,0);
+      const actions = el(`<div style="margin-top:12px; display:flex; gap:8px;"><button class="btn primary" id="checkoutBtn">Place Order (Mock)</button><button class="btn" id="continueShop">Continue Shopping</button></div>`);
+      card.appendChild(el(`<div style="margin-top:8px; font-weight:700">Total: ₹${total}</div>`));
+      card.appendChild(actions);
+
+      // handlers
+      card.querySelectorAll('button[data-act="remove"]').forEach(b => {
+        b.addEventListener('click', () => {
+          const idx = Number(b.getAttribute('data-idx'));
+          const arr = getCart();
+          arr.splice(idx,1);
+          setCart(arr);
+          renderCartView();
+        });
+      });
+      $('#checkoutBtn').addEventListener('click', checkoutMock);
+      $('#continueShop').addEventListener('click', renderBrowse);
+    }
+
+    // Mock checkout: create an order in localStorage and deduct qty from produce
+    function checkoutMock() {
+      const cart = getCart();
+      if (cart.length === 0) return alert('Cart is empty.');
+      // simple "checkout" flow
+      const buyerName = prompt('Enter buyer name for order (demo):', 'Demo Buyer');
+      if (buyerName === null) return;
+      const orders = getOrders();
+      const order = { id: 'o_' + Date.now(), buyer:buyerName, items: cart, total: cart.reduce((s,i)=>s+i.total,0), status:'Confirmed', createdAt:Date.now(), etaMin: 45 };
+      orders.unshift(order);
+      setOrders(orders);
+
+      // deduct from produce
+      const produce = getProduce();
+      cart.forEach(ci => {
+        const p = produce.find(x => x.id === ci.id);
+        if (p) p.qtyKg = Math.max(0, p.qtyKg - ci.kg);
+      });
+      setProduce(produce);
+
+      // update impact: increase farmersConnected (if new) and reduce waste by some factor
+      const meta = getMeta();
+      meta.farmersConnected = (meta.farmersConnected || 0) + Math.min(3, cart.length); // mock increase
+      meta.wasteReducedKg = (meta.wasteReducedKg || 0) + Math.floor(Math.random()*8) + 2;
+      setMeta(meta);
+
+      // clear cart
+      setCart([]);
+      alert('Order placed (mock). Use Orders view to track it.');
+      renderOrders();
+    }
+
+    // Orders view
+    function renderOrders() {
+      clearContent();
+      const orders = getOrders();
+      const c = el(`<div class="panel"><h2>Your Orders</h2></div>`);
+      $('#content').appendChild(c);
+
+      const listPanel = el(`<div class="panel" style="margin-top:12px;"></div>`);
+      $('#content').appendChild(listPanel);
+      if (!orders || orders.length === 0) {
+        listPanel.innerHTML = '<div class="small">No orders yet. Place an order from the Browse view.</div>';
+        return;
+      }
+      orders.forEach(o => {
+        const oEl = el(`
+          <div style="padding:12px; border-bottom:1px dashed #eef6ee;">
+            <div style="display:flex; justify-content:space-between;"><div><b>Order ${o.id}</b><div class="muted small">${o.items.length} items • ${new Date(o.createdAt).toLocaleString()}</div></div><div style="text-align:right">${o.status} • ETA ${o.etaMin} min</div></div>
+            <div style="margin-top:8px;">
+              ${o.items.map(it => `<div style="display:flex; justify-content:space-between;"><div>${it.name} • ${it.kg} kg</div><div>₹${it.total}</div></div>`).join('')}
+            </div>
+          </div>
+        `);
+        listPanel.appendChild(oEl);
+      });
+    }
+
+    // Impact dashboard
+    function renderImpact() {
+      clearContent();
+      const meta = getMeta();
+      const orders = getOrders();
+      const totalTransactions = orders.length;
+      const c = el(`
+        <div>
+          <div class="panel">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h2>Impact Dashboard</h2>
+                <div class="small">Snapshot of social and environmental benefits (demo data).</div>
+              </div>
+              <div><button class="btn" id="impactBack">Back</button></div>
+            </div>
+
+            <div style="margin-top:12px;" class="counters">
+              <div style="flex:1; background:linear-gradient(180deg,#eaf7ea,#ffffff); border-radius:8px; padding:12px; text-align:center;">
+                <h3 id="farmersCount">${meta.farmersConnected || 0}</h3><div class="muted small">Farmers Connected</div>
+              </div>
+              <div style="flex:1; background:linear-gradient(180deg,#fff8e6,#ffffff); border-radius:8px; padding:12px; text-align:center;">
+                <h3 id="wasteSaved">${meta.wasteReducedKg || 0} kg</h3><div class="muted small">Food Waste Reduced</div>
+              </div>
+              <div style="flex:1; background:linear-gradient(180deg,#eef6ff,#ffffff); border-radius:8px; padding:12px; text-align:center;">
+                <h3>${totalTransactions}</h3><div class="muted small">Transactions</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <h4>How this helps (for your pitch)</h4>
+              <ul style="margin-left:14px;" class="small">
+                <li>Farmers receive a higher share of sale price by cutting distributors.</li>
+                <li>Near-expiry discounts and notifications reduce local food waste.</li>
+                <li>Shorter distance deliveries mean lower transport emissions.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      `);
+      $('#content').appendChild(c);
+      $('#impactBack').addEventListener('click', renderLanding);
+    }
+
+    function renderImpactPanel() {
+      const meta = getMeta();
+      $('#impactFarmers').innerText = meta.farmersConnected || 0;
+      $('#impactWaste').innerText = (meta.wasteReducedKg || 0) + ' kg';
+    }
+
+    // ---------- init ----------
+    seedData();
+    renderCartSummary();
+    renderImpactPanel();
+    updateCartCount();
+    renderLanding();
+
+    // Expose helper on window for quick debugging in demo (optional)
+    window.__agri_debug = { getProduce, getCart, getOrders, getMeta, setMeta };
+
+  </script>
+</body>
+</html>
