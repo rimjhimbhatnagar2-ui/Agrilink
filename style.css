@@ -1,0 +1,107 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f7f6;
+}
+
+.navbar {
+  background: #2e7d32;
+  color: white;
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.navbar li { cursor: pointer; }
+
+.section {
+  display: none;
+  padding: 40px;
+}
+
+.section.active {
+  display: block;
+}
+
+.hero {
+  background: #e8f5e9;
+  text-align: center;
+  padding: 70px;
+}
+
+.primary {
+  background: #2e7d32;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  cursor: pointer;
+}
+
+.steps {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.badge {
+  background: orange;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+.cart ul {
+  list-style: none;
+}
+
+.login input, .login select {
+  display: block;
+  margin: 10px 0;
+  padding: 8px;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 20px;
+}
+
+.box {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.impact {
+  background: #e8f5e9;
+}
+
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 20px;
+}
+
+footer {
+  background: #2e7d32;
+  color: white;
+  text-align: center;
+  padding: 15px;
+}
